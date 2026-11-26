@@ -11,15 +11,28 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Initialize Gemini client using process.env.GEMINI_API_KEY
+// 1. Check if the API key is actually loaded when the server starts
+if (!process.env.GEMINI_API_KEY) {
+  console.error("CRITICAL ERROR: GEMINI_API_KEY is missing from environment variables!");
+}
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.get("/", (req, res) => {
-  res.send("Gemini API Backend is running.");
+  res.json({
+    status: "Backend is running",
+    apiKeyConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
 });
 
 app.post("/api/chat", async (req, res) => {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ 
+        error: "Server misconfiguration: GEMINI_API_KEY is missing on the backend." 
+      });
+    }
+
     const { prompt } = req.body;
 
     if (!prompt) {
@@ -34,7 +47,10 @@ app.post("/api/chat", async (req, res) => {
     res.json({ reply: response.text });
   } catch (error) {
     console.error("Gemini API Error:", error);
-    res.status(500).json({ error: "Failed to generate response from Gemini." });
+    // Return Google's exact error message to the frontend
+    res.status(500).json({ 
+      error: error.message || "Failed to generate response from Gemini." 
+    });
   }
 });
 
