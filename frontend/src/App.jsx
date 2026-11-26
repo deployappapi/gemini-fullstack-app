@@ -7,7 +7,7 @@ function App() {
   const [error, setError] = useState("");
 
   // Uses Render backend URL in production, or localhost during development
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://gemini-api-backend-bp92.onrender.com";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
